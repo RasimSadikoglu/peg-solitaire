@@ -1,5 +1,5 @@
 CXX:=g++
-CXXFLAGS:=-g -Wall -Werror -Wextra -Iinclude
+CXXFLAGS:=-g -Wall -Werror -Wextra -Iinclude -std=c++23
 
 DEPS:=
 OBJS:=main
