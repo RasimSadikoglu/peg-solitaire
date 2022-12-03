@@ -5,9 +5,10 @@
 
 uint8_t translate_2d(uint8_t index);
 uint8_t translate_1d(uint8_t c);
+void print_board(std::bitset<33> board);
 
 int main() {
-    std::cout << "Hello, world!";
+    print_board({0x10000});
 }
 
 uint8_t translate_2d(uint8_t i) {
@@ -40,6 +41,23 @@ uint8_t translate_1d(uint8_t c) {
         return j > 2 ? -1 : 27 + i * 3 + j;
     } else {
         return -1;
+    }
+}
+
+void print_board(std::bitset<33> board) {
+    int bi = 0;
+    int c = translate_2d(bi);
+
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 7; j++) {
+            if (c / 7 == i && c % 7 == j) {
+                std::cout << (board[bi] ? " o " : "   ");
+                c = translate_2d(++bi);
+            } else {
+                std::cout << " - ";
+            }
+        }
+        std::cout << "\n";
     }
 }
 
