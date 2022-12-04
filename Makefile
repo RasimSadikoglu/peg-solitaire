@@ -1,8 +1,8 @@
 CXX:=g++
-CXXFLAGS:=-g -Wall -Werror -Wextra -Iinclude -std=c++23
+CXXFLAGS:=-O3 -Wall -Werror -Wextra -Iinclude -std=c++23
 
-DEPS:=move board
-OBJS:=main move board
+DEPS:=move board search
+OBJS:=main move board search
 DIRS:=bin obj
 BIN:=bin/main
 

@@ -1,10 +1,5 @@
-#include <iostream>
-#include <string>
-#include <bitset>
-#include <stdio.h>
-
-#include "board.h"
+#include "search.h"
 
 int main() {
-    print_board({0x10000});
+    depth_first_search();
 }

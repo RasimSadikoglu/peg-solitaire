@@ -23,7 +23,7 @@ uint8_t translate_1d(uint8_t c) {
     } else if (c < 35) {
         i = (c / 7) - 2;
         j = (c % 7);
-        return 6 + i * 3 + j;
+        return 6 + i * 7 + j;
     } else if (c < 50) {
         i = (c / 7) - 5;
         j = (c % 7) - 2;
@@ -48,27 +48,29 @@ void print_board(std::bitset<33> board) {
         }
         std::cout << "\n";
     }
+
+    std::cout << "Remaining pieces: " << std::setw(2) << board.count() << "\n";
 }
 
-// void test_translate() {
-//     for (int i = 0; i < 49; i++) {
-//         if (!(i % 7)) std::cout << "\n";
-//         printf("%5d", (int)translate_1d(i));
-//     }
+void test_translate() {
+    for (int i = 0; i < 49; i++) {
+        if (!(i % 7)) std::cout << "\n";
+        printf("%5d", (int)translate_1d(i));
+    }
 
-//     std::cout << "\n\n";
+    std::cout << "\n\n";
 
-//     uint8_t n = 0;
-//     int next = translate_2d(n);
-//     for (int i = 0; i < 7; i++) {
-//         for (int j = 0; j < 7; j++) {
-//             if (next / 7 == i && next % 7 == j) {
-//                 printf("%5d", (int)n);
-//                 next = translate_2d(++n);
-//             } else {
-//                 std::cout << "     ";
-//             }
-//         }
-//         std::cout << "\n";
-//     }
-// }
+    uint8_t n = 0;
+    int next = translate_2d(n);
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 7; j++) {
+            if (next / 7 == i && next % 7 == j) {
+                std::cout << std::setw(5) << (int)n;
+                next = translate_2d(++n);
+            } else {
+                std::cout << "     ";
+            }
+        }
+        std::cout << "\n";
+    }
+}
