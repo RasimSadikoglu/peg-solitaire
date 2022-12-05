@@ -49,6 +49,10 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
         result.second = next_board;
     }
 
+    if (result.first == 0x0) {
+        result.first = result.second;
+    }
+
     return result;
 }
 
@@ -68,14 +72,12 @@ std::bitset<33> OrderedMove::next() {
 
         auto next_move = this->check_for_next_move(this->current_index);
 
-        if (next_move.first == 0x0) next_move.first = next_move.second;
-
         if (next_move.first == 0x0) {
             this->current_index++;
             continue;
         }
-
-        if (next_move.first != next_move.second) {
+        
+        if (next_move.second != next_move.first) {
             this->cached_board = next_move.second;
         }
 
@@ -103,14 +105,14 @@ std::bitset<33> RandomMove::next() {
 
         auto next_move = this->check_for_next_move(this->perm[this->current_index]);
 
-        if (next_move.first == 0x0) next_move.first = next_move.second;
-
         if (next_move.first == 0x0) {
             this->current_index++;
             continue;
         }
+        
+        if (next_move.second != 0x0) {
+            if (rand() > RAND_MAX / 2) std::swap(next_move.first, next_move.second);
 
-        if (next_move.first != next_move.second) {
             this->cached_board = next_move.second;
         }
 
