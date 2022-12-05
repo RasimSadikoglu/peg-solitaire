@@ -1,12 +1,14 @@
 #pragma once
 
-#include <bitset>
-#include <stack>
-#include <iostream>
-#include <queue>
+#include <cstdint>
 
-#include "move.h"
+namespace peg_solitaire {
+    void breadth_first_search();
+    void depth_first_search();
+    void iterative_deepining_search();
+    void depth_first_search_random_selection();
+    void depth_first_search_heuristic_selection();
 
-std::bitset<33> depth_first_search();
-
-std::bitset<33> breadth_first_search();
+    // extra
+    void depth_limited_search(uint8_t depth);
+}

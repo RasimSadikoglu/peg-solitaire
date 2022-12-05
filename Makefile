@@ -1,8 +1,9 @@
 CXX:=g++
 CXXFLAGS:=-O3 -Wall -Werror -Wextra -Iinclude -std=c++23
+MACROS = -DBYPASS_DEPTH_CHECK
 
-DEPS:=move board search
-OBJS:=main move board search
+DEPS:=move board search movefactory frontierlist
+OBJS:=main move board search movefactory frontierlist
 DIRS:=bin obj
 BIN:=bin/main
 
@@ -13,7 +14,7 @@ $(BIN): $(DIRS) $(_OBJS)
 	$(CXX) $(CXXFLAGS) $(_OBJS) -o $@
 
 obj/%.o: src/%.cpp $(_DEPS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(MACROS) -c $< -o $@
 
 run: bin/main
 	bin/main
