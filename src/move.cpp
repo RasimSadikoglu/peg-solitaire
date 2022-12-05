@@ -53,6 +53,11 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
 }
 
 std::bitset<33> OrderedMove::next() {
+    if (this->board.none()) {
+        this->current_index = 33;
+        return 0x0;
+    }
+
     if (cached_board != 0x0) {
         std::bitset<33> cached_board(this->cached_board);
         this->cached_board = 0x0;
@@ -83,6 +88,11 @@ std::bitset<33> OrderedMove::next() {
 }
 
 std::bitset<33> RandomMove::next() {
+    if (this->board.none()) {
+        this->current_index = 33;
+        return 0x0;
+    }
+
     if (cached_board != 0x0) {
         std::bitset<33> cached_board(this->cached_board);
         this->cached_board = 0x0;

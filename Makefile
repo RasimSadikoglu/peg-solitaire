@@ -14,7 +14,7 @@ $(BIN): $(DIRS) $(_OBJS)
 	$(CXX) $(CXXFLAGS) $(_OBJS) -o $@
 
 obj/%.o: src/%.cpp $(_DEPS)
-	$(CXX) $(CXXFLAGS) $(MACROS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run: bin/main
 	bin/main
