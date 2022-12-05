@@ -1,5 +1,9 @@
 #include "move.h"
 
+#include <algorithm>
+
+#include "board.h"
+
 Move::Move(std::bitset<33> board): board{board} {}
 
 OrderedMove::OrderedMove(std::bitset<33> board):

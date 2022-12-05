@@ -2,7 +2,6 @@
 
 #include <bitset>
 #include <iostream>
-#include <iomanip>
 
 #define INITIAL_BOARD 0x1fffeffff
 #define CLEAR_BOARD do { std::cout << "\033[8F"; } while (false)

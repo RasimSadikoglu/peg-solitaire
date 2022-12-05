@@ -1,5 +1,7 @@
 #include "board.h"
 
+#include <iomanip>
+
 uint8_t translate_2d(uint8_t i) {
     if (i < 6) {
         return (i / 3) * 7 + (i % 3) + 2; 

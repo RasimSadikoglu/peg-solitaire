@@ -1,17 +1,17 @@
 #include "search.h"
 
-#include <chrono>
-#include <thread>
 #include <bitset>
-#include <stack>
 #include <iostream>
-#include <queue>
 
 #include "move.h"
 #include "movefactory.h"
 #include "frontierlist.h"
+#include "board.h"
 
-std::bitset<33> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
+static std::bitset<33> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
+    uint8_t _ignore_unused = depth;
+    _ignore_unused = _ignore_unused;
+
     frontier_list.push(move_factory.create_move(INITIAL_BOARD));
     std::bitset<33> best_board{INITIAL_BOARD};
 
@@ -23,7 +23,7 @@ std::bitset<33> search(FrontierList &frontier_list, const MoveFactory &move_fact
         if (cycle_count % 10000000 == 0) {
             CLEAR_BOARD;
             print_board(best_board);
-            std::cout << (int)cycle_count;
+            std::cout << cycle_count;
         }
 
 #ifndef BYPASS_DEPTH_CHECK
@@ -50,7 +50,7 @@ std::bitset<33> search(FrontierList &frontier_list, const MoveFactory &move_fact
 
     CLEAR_BOARD;
     print_board(best_board);
-    std::cout << (int)cycle_count;
+    std::cout << cycle_count;
 
     return best_board;
 }

@@ -1,11 +1,7 @@
 #pragma once
 
 #include <bitset>
-#include <vector>
 #include <array>
-#include <algorithm>
-
-#include "board.h"
 
 class Move {
     public:
