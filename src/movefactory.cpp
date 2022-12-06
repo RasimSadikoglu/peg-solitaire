@@ -9,3 +9,8 @@ std::shared_ptr<Move> RandomMoveFactory::create_move(std::bitset<33> board) cons
     std::shared_ptr<Move> move(new RandomMove(board));
     return move;
 }
+
+std::shared_ptr<Move> HeuristicMoveFactory::create_move(std::bitset<33> board) const {
+    std::shared_ptr<Move> move(new HeuristicMove(board));
+    return move;
+}

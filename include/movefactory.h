@@ -18,3 +18,8 @@ class RandomMoveFactory : public MoveFactory{
     public:
         std::shared_ptr<Move> create_move(std::bitset<33> board) const override;
 };
+
+class HeuristicMoveFactory : public MoveFactory{
+    public:
+        std::shared_ptr<Move> create_move(std::bitset<33> board) const override;
+};

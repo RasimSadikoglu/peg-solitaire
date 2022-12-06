@@ -18,6 +18,11 @@ RandomMove::RandomMove(std::bitset<33> board):
     std::random_shuffle(this->perm.begin(), this->perm.end());
 }
 
+HeuristicMove::HeuristicMove(std::bitset<33> board):
+    Move(board) {
+    this->calculate_moves();
+}
+
 std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t peg) {
     
     std::pair<std::bitset<33>, std::bitset<33>> result {0x0, 0x0};
@@ -51,6 +56,7 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
 
     if (result.first == 0x0) {
         result.first = result.second;
+        result.second = 0x0;
     }
 
     return result;
@@ -77,7 +83,7 @@ std::bitset<33> OrderedMove::next() {
             continue;
         }
         
-        if (next_move.second != next_move.first) {
+        if (next_move.second != 0x0) {
             this->cached_board = next_move.second;
         }
 
@@ -101,7 +107,8 @@ std::bitset<33> RandomMove::next() {
         return cached_board;
     }
 
-    while (this->current_index < 33) {
+    uint8_t size = this->perm.size();
+    while (this->current_index < size) {
 
         auto next_move = this->check_for_next_move(this->perm[this->current_index]);
 
@@ -122,4 +129,60 @@ std::bitset<33> RandomMove::next() {
     }
 
     return 0x0;
+}
+
+void HeuristicMove::calculate_moves() {
+    for (uint8_t i = 1; i < 33; i++) {
+        auto moves = this->check_for_next_move(i);
+
+        if (moves.first == 0x0) continue;
+
+        this->moves[this->calculate_heuristic_score(moves.first)] = moves.first;
+
+        if (moves.second == 0x0) continue;
+
+        this->moves[this->calculate_heuristic_score(moves.second)] = moves.second;
+    }
+
+    this->next_move = this->moves.begin();
+}
+
+uint16_t HeuristicMove::calculate_heuristic_score(std::bitset<33> board) {
+    
+    uint16_t score = 0;
+    for (uint8_t peg = 0; peg < 33; peg++) {
+        if (!board[peg]) continue;
+
+        uint8_t cd = translate_2d(peg);
+        uint8_t i = cd / 7, j = cd % 7;
+
+        uint8_t 
+            left = translate_1d(j - 1 < 7 ? i * 7 + j - 1 : -1),
+            top = translate_1d(i - 1 < 7 ? i * 7 + j - 7 : -1),
+            right = translate_1d(j + 1 < 7 ? i * 7 + j + 1 : -1),
+            bottom = translate_1d(i + 1 < 7 ? i * 7 + j + 7 : -1);
+
+        uint8_t loneliness = 1;
+        loneliness += !((left == 0xff) && board[left]);
+        loneliness += !((top != 0xff) && board[top]);
+        loneliness += !((right != 0xff) && board[right]);
+        loneliness += !((bottom != 0xff) && board[bottom]);
+
+        uint8_t distance = std::abs((int8_t)i - 3) + std::abs((int8_t)j - 3);
+
+        score += loneliness * distance;
+    }
+    return score;
+}
+
+std::bitset<33> HeuristicMove::next() {
+    if (this->next_move == this->moves.end()) {
+        return 0x0;
+    }
+
+    auto next_move = this->next_move->second;
+
+    this->next_move++;
+
+    return next_move;
 }

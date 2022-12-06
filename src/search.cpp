@@ -8,7 +8,7 @@
 #include "frontierlist.h"
 #include "board.h"
 
-static std::bitset<33> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
+static void search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
     uint8_t _ignore_unused = depth;
     _ignore_unused = _ignore_unused;
 
@@ -16,11 +16,10 @@ static std::bitset<33> search(FrontierList &frontier_list, const MoveFactory &mo
     std::bitset<33> best_board{INITIAL_BOARD};
 
     while (!frontier_list.empty()) {
-        cycle_count++;
         
         auto top = frontier_list.top();
 
-        if (cycle_count % 10000000 == 0) {
+        if (cycle_count % 1000000 == 0) {
             CLEAR_BOARD;
             print_board(best_board);
             std::cout << cycle_count;
@@ -46,13 +45,20 @@ static std::bitset<33> search(FrontierList &frontier_list, const MoveFactory &mo
         }
 
         frontier_list.pop();
+        cycle_count++;
     }
 
     CLEAR_BOARD;
     print_board(best_board);
-    std::cout << cycle_count;
+    std::cout << cycle_count << "\n";
+}
 
-    return best_board;
+void print_solution(FrontierList &frontier_list) {
+    while (!frontier_list.empty()) {
+        auto top = frontier_list.top();
+        print_board(top->board);
+        frontier_list.pop();
+    }
 }
 
 namespace peg_solitaire {
@@ -68,6 +74,8 @@ namespace peg_solitaire {
         auto frontier_list = FrontierStack();
         uint64_t cycle_count = 0;
         search(frontier_list, OrderedMoveFactory(), cycle_count);
+
+        print_solution(frontier_list);
     }
 
     void iterative_deepining_search() {
@@ -87,8 +95,12 @@ namespace peg_solitaire {
     }
 
     void depth_first_search_heuristic_selection() {
-        std::cout << "not implemented\n";
-        exit(EXIT_FAILURE);
+        print_board(INITIAL_BOARD);
+        auto frontier_list = FrontierStack();
+        uint64_t cycle_count = 0;
+        search(frontier_list, HeuristicMoveFactory(), cycle_count);
+
+        print_solution(frontier_list);
     }
 
     void depth_limited_search(uint8_t depth) {

@@ -2,6 +2,7 @@
 
 #include <bitset>
 #include <array>
+#include <map>
 
 class Move {
     public:
@@ -35,4 +36,18 @@ class RandomMove: public Move {
         RandomMove(std::bitset<33> board);
         std::bitset<33> next() override;
         ~RandomMove() {}
+};
+
+class HeuristicMove: public Move {
+    private:
+        std::map<uint16_t, std::bitset<33>> moves;
+        std::map<uint16_t, std::bitset<33>>::iterator next_move;
+
+    private:
+        void calculate_moves();
+        uint16_t calculate_heuristic_score(std::bitset<33> board);
+    public:
+        HeuristicMove(std::bitset<33> board);
+        std::bitset<33> next() override;
+        ~HeuristicMove() {}
 };
