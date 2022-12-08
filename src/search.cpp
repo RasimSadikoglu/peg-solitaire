@@ -4,6 +4,10 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <fstream>
+#include <unistd.h>
+#include <iomanip>
+#include <cstdio>
 
 #include "move.h"
 #include "movefactory.h"
@@ -12,6 +16,41 @@
 
 static bool terminate = false;
 static uint8_t time_limit = -1;
+
+static std::string process_mem_usage()
+{
+    /*
+    Source
+    https://gist.github.com/thirdwing/da4621eb163a886a03c5
+    */
+
+    double vm_usage     = 0.0;
+    double resident_set = 0.0;
+
+    // the two fields we want
+    unsigned long vsize;
+    long rss;
+    {
+        std::string ignore;
+        std::ifstream ifs("/proc/self/stat", std::ios_base::in);
+        ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+                >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+                >> ignore >> ignore >> vsize >> rss;
+    }
+
+    long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
+    vm_usage = vsize / 1024.0;
+    resident_set = rss * page_size_kb;
+
+    int i; for (i = 0; i < 2; i++) {
+        if (resident_set < 1024) break;
+        resident_set /= 1024;
+    }
+
+    std::ostringstream stringStream;
+    stringStream << std::setw(7) << std::setprecision(1) << std::fixed << resident_set << "KMG"[i] << "B";
+    return stringStream.str();
+}
 
 static void search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
     uint8_t _ignore_unused = depth;
@@ -30,10 +69,11 @@ static void search(FrontierList &frontier_list, const MoveFactory &move_factory,
 
         auto top = frontier_list.top();
 
-        if (cycle_count % 1000000 == 0) {
+        if (cycle_count % 10000 == 0) {
             CLEAR_BOARD;
             print_board(best_board);
-            std::cout << cycle_count;
+            std::cout << "Ram Usage: " << process_mem_usage();
+            // std::cout << cycle_count;
         }
 
 #ifndef BYPASS_DEPTH_CHECK
