@@ -2,11 +2,16 @@
 
 #include <bitset>
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include "move.h"
 #include "movefactory.h"
 #include "frontierlist.h"
 #include "board.h"
+
+static bool terminate = false;
+static uint8_t time_limit = -1;
 
 static void search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
     uint8_t _ignore_unused = depth;
@@ -16,7 +21,13 @@ static void search(FrontierList &frontier_list, const MoveFactory &move_factory,
     std::bitset<33> best_board{INITIAL_BOARD};
 
     while (!frontier_list.empty()) {
-        
+
+#ifndef BYPASS_TIME_LIMIT
+        if (terminate) {
+            break;
+        }
+#endif
+
         auto top = frontier_list.top();
 
         if (cycle_count % 1000000 == 0) {
@@ -53,7 +64,7 @@ static void search(FrontierList &frontier_list, const MoveFactory &move_factory,
     std::cout << cycle_count << "\n";
 }
 
-void print_solution(FrontierList &frontier_list) {
+static void print_solution(FrontierList &frontier_list) {
     while (!frontier_list.empty()) {
         auto top = frontier_list.top();
         print_board(top->board);
@@ -108,5 +119,14 @@ namespace peg_solitaire {
         auto frontier_list = FrontierStack();
         uint64_t cycle_count = 0;
         search(frontier_list, OrderedMoveFactory(), cycle_count, depth);
+    }
+    
+    void set_time_limit(uint8_t minutes) {
+        time_limit = minutes;
+    }
+
+    void start_timer() {
+        std::this_thread::sleep_for(std::chrono::minutes(time_limit));
+        terminate = true;
     }
 }

@@ -2,8 +2,8 @@
 #include "move.h"
 
 #include <unordered_map>
-#include <iostream>
 #include <string>
+#include <thread>
 
 int main(int argc, char* argv[]) {
 
@@ -15,5 +15,8 @@ int main(int argc, char* argv[]) {
         std::make_pair("dfs-heuristic", peg_solitaire::depth_first_search_heuristic_selection),
     };
 
+    peg_solitaire::set_time_limit(std::atoi(argv[2]));
+    std::thread wait(peg_solitaire::start_timer);
     jump_table[argv[1]]();
+    wait.join();
 }

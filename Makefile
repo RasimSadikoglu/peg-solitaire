@@ -1,6 +1,6 @@
 CXX:=g++
 CXXFLAGS:=-O3 -Wall -Wextra -Iinclude -std=c++23
-MACROS = -DBYPASS_DEPTH_CHECK
+MACROS = -DBYPASS_DEPTH_CHECK -DBYPASS_TIME_LIMIT -DBYPASS_MEMORY_LIMIT
 
 DEPS:=move board search movefactory frontierlist
 OBJS:=main move board search movefactory frontierlist
@@ -17,7 +17,7 @@ obj/%.o: src/%.cpp $(_DEPS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run: bin/main
-	bin/main dfs-heuristic 60
+	bin/main dfs 1
 
 debug: bin/main
 	gdb bin/main
