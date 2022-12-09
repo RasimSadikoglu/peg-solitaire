@@ -4,9 +4,14 @@
 #include <iostream>
 
 #define INITIAL_BOARD 0x1fffeffff
-#define CLEAR_BOARD do { std::cout << "\033[8F"; } while (false)
+#define OPTIMAL_BOARD 0x10000
+#define CLEAR_LINES(COUNT) do { std::cout << "\033[" #COUNT "F"; } while (false)
 
-uint8_t translate_2d(uint8_t i);
-uint8_t translate_1d(uint8_t c);
-void print_board(std::bitset<33> board);
-void test_translate();
+namespace peg_solitaire {
+    uint8_t translate_index(uint8_t index);
+    uint8_t translate_coordinate(uint8_t coordinate);
+    void print_board(std::bitset<33> board, uint64_t nodes_expanded = 0);
+    void set_algorithm(std::string alg);
+    std::pair<double, std::string> process_mem_usage();
+    uint32_t parse_elapsed_time();
+}

@@ -30,14 +30,14 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
     
     if (!board[peg]) return result;
 
-    uint8_t cd = translate_2d(peg);
+    uint8_t cd = peg_solitaire::translate_index(peg);
     uint8_t i = cd / 7, j = cd % 7;
 
     uint8_t 
-        left = translate_1d(j - 1 < 7 ? i * 7 + j - 1 : -1),
-        top = translate_1d(i - 1 < 7 ? i * 7 + j - 7 : -1),
-        right = translate_1d(j + 1 < 7 ? i * 7 + j + 1 : -1),
-        bottom = translate_1d(i + 1 < 7 ? i * 7 + j + 7 : -1);
+        left = peg_solitaire::translate_coordinate(j - 1 < 7 ? i * 7 + j - 1 : -1),
+        top = peg_solitaire::translate_coordinate(i - 1 < 7 ? i * 7 + j - 7 : -1),
+        right = peg_solitaire::translate_coordinate(j + 1 < 7 ? i * 7 + j + 1 : -1),
+        bottom = peg_solitaire::translate_coordinate(i + 1 < 7 ? i * 7 + j + 7 : -1);
 
     if (left != 0xff && right != 0xff && (next_board[left] ^ next_board[right])) {
         next_board.reset(peg);
@@ -153,14 +153,14 @@ uint16_t HeuristicMove::calculate_heuristic_score(std::bitset<33> board) {
     for (uint8_t peg = 0; peg < 33; peg++) {
         if (!board[peg]) continue;
 
-        uint8_t cd = translate_2d(peg);
+        uint8_t cd = peg_solitaire::translate_index(peg);
         uint8_t i = cd / 7, j = cd % 7;
 
         uint8_t 
-            left = translate_1d(j - 1 < 7 ? i * 7 + j - 1 : -1),
-            top = translate_1d(i - 1 < 7 ? i * 7 + j - 7 : -1),
-            right = translate_1d(j + 1 < 7 ? i * 7 + j + 1 : -1),
-            bottom = translate_1d(i + 1 < 7 ? i * 7 + j + 7 : -1);
+            left = peg_solitaire::translate_coordinate(j - 1 < 7 ? i * 7 + j - 1 : -1),
+            top = peg_solitaire::translate_coordinate(i - 1 < 7 ? i * 7 + j - 7 : -1),
+            right = peg_solitaire::translate_coordinate(j + 1 < 7 ? i * 7 + j + 1 : -1),
+            bottom = peg_solitaire::translate_coordinate(i + 1 < 7 ? i * 7 + j + 7 : -1);
 
         // uint8_t loneliness = 1;
         uint8_t loneliness = 0;

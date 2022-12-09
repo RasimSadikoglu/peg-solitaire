@@ -14,54 +14,24 @@
 #include "frontierlist.h"
 #include "board.h"
 
-static bool terminate = false;
+#define MEMORY_LIMIT 1
+
+static uint8_t terminate = 0x0;
+static bool print = false;
 static uint8_t time_limit = -1;
 
-static std::string process_mem_usage()
-{
-    /*
-    Source
-    https://gist.github.com/thirdwing/da4621eb163a886a03c5
-    */
-
-    double vm_usage     = 0.0;
-    double resident_set = 0.0;
-
-    // the two fields we want
-    unsigned long vsize;
-    long rss;
-    {
-        std::string ignore;
-        std::ifstream ifs("/proc/self/stat", std::ios_base::in);
-        ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
-                >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
-                >> ignore >> ignore >> vsize >> rss;
-    }
-
-    long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
-    vm_usage = vsize / 1024.0;
-    resident_set = rss * page_size_kb;
-
-    int i; for (i = 0; i < 2; i++) {
-        if (resident_set < 1024) break;
-        resident_set /= 1024;
-    }
-
-    std::ostringstream stringStream;
-    stringStream << std::setw(7) << std::setprecision(1) << std::fixed << resident_set << "KMG"[i] << "B";
-    return stringStream.str();
-}
-
-static void search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
+static std::shared_ptr<FrontierList> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
     uint8_t _ignore_unused = depth;
     _ignore_unused = _ignore_unused;
 
     frontier_list.push(move_factory.create_move(INITIAL_BOARD));
+
+    const std::shared_ptr<FrontierList> best_path;
     std::bitset<33> best_board{INITIAL_BOARD};
 
     while (!frontier_list.empty()) {
 
-#ifndef BYPASS_TIME_LIMIT
+#ifndef BYPASS_TIME_MEMORY_LIMIT
         if (terminate) {
             break;
         }
@@ -69,11 +39,10 @@ static void search(FrontierList &frontier_list, const MoveFactory &move_factory,
 
         auto top = frontier_list.top();
 
-        if (cycle_count % 10000 == 0) {
-            CLEAR_BOARD;
-            print_board(best_board);
-            std::cout << "Ram Usage: " << process_mem_usage();
-            // std::cout << cycle_count;
+        if (print) {
+            CLEAR_LINES(12);
+            peg_solitaire::print_board(best_board, cycle_count);
+            print = false;
         }
 
 #ifndef BYPASS_DEPTH_CHECK
@@ -90,47 +59,38 @@ static void search(FrontierList &frontier_list, const MoveFactory &move_factory,
 #endif
 
         auto current_board = top->board;
-        if (current_board.count() <= best_board.count()) {
+        if (current_board == OPTIMAL_BOARD || current_board.count() < best_board.count()) {
             best_board = current_board;
-            if (best_board == 0x10000) break;
+            if (best_board == 0x10000) {
+                terminate = 0xff;
+                break;
+            }
         }
 
         frontier_list.pop();
         cycle_count++;
     }
 
-    CLEAR_BOARD;
-    print_board(best_board);
-    std::cout << cycle_count << "\n";
-}
-
-static void print_solution(FrontierList &frontier_list) {
-    while (!frontier_list.empty()) {
-        auto top = frontier_list.top();
-        print_board(top->board);
-        frontier_list.pop();
-    }
+    return best_path;
 }
 
 namespace peg_solitaire {
     void breadth_first_search() {
-        print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD);
         auto frontier_list = FrontierQueue();
         uint64_t cycle_count = 0;
         search(frontier_list, OrderedMoveFactory(), cycle_count);
     }
 
     void depth_first_search() {
-        print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD);
         auto frontier_list = FrontierStack();
         uint64_t cycle_count = 0;
         search(frontier_list, OrderedMoveFactory(), cycle_count);
-
-        print_solution(frontier_list);
     }
 
     void iterative_deepining_search() {
-        print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD);
         uint64_t cycle_count = 0;
         for (uint8_t depth = 0; depth < 33; depth++) {
             auto frontier_list = FrontierStack(); 
@@ -139,23 +99,21 @@ namespace peg_solitaire {
     }
 
     void depth_first_search_random_selection() {
-        print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD);
         auto frontier_list = FrontierStack();
         uint64_t cycle_count = 0;
         search(frontier_list, RandomMoveFactory(), cycle_count);
     }
 
     void depth_first_search_heuristic_selection() {
-        print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD);
         auto frontier_list = FrontierStack();
         uint64_t cycle_count = 0;
         search(frontier_list, HeuristicMoveFactory(), cycle_count);
-
-        print_solution(frontier_list);
     }
 
     void depth_limited_search(uint8_t depth) {
-        print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD);
         auto frontier_list = FrontierStack();
         uint64_t cycle_count = 0;
         search(frontier_list, OrderedMoveFactory(), cycle_count, depth);
@@ -165,8 +123,28 @@ namespace peg_solitaire {
         time_limit = minutes;
     }
 
-    void start_timer() {
-        std::this_thread::sleep_for(std::chrono::minutes(time_limit));
-        terminate = true;
+    void helper_thread() {
+        uint64_t artificial_cycles = 0;
+        for (;;) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            artificial_cycles++;
+
+            if (terminate) break;
+
+            if (artificial_cycles % 10 == 0) {
+                print = true;
+            }
+
+            if (artificial_cycles > time_limit * 6000) {
+                terminate = 0x1;
+                break;
+            }
+
+            auto ram_usage = peg_solitaire::process_mem_usage();
+            if (ram_usage.second == "GB" && ram_usage.first > MEMORY_LIMIT) {
+                terminate = 0x2;
+                break;
+            }
+        }
     }
 }

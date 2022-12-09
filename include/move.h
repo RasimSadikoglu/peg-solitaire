@@ -3,6 +3,7 @@
 #include <bitset>
 #include <array>
 #include <map>
+#include <memory>
 
 class Move {
     public:
@@ -13,6 +14,7 @@ class Move {
 
     protected: 
         std::pair<std::bitset<33>, std::bitset<33>> check_for_next_move(uint8_t peg);
+        std::shared_ptr<Move> parent;
 };
 
 class OrderedMove: public Move {
