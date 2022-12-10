@@ -11,7 +11,4 @@ namespace peg_solitaire {
 
     void set_time_limit(uint8_t minutes);
     void helper_thread();
-
-    // extra
-    void depth_limited_search(uint8_t depth);
 }

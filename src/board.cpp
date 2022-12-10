@@ -7,6 +7,8 @@
 #include <fstream>
 #include <stack>
 #include <thread>
+#include <cstdio>
+#include <iostream>
 
 #if !(defined(_WIN32) || defined(_WIN64))
 #include <unistd.h>
@@ -48,18 +50,18 @@ static void _print_board(std::bitset<33> board) {
     int c = peg_solitaire::translate_index(bi);
 
     for (int i = 0; i < 7; i++) {
-        std::cout << "    ";
+        std::printf("%4s", "");
         for (int j = 0; j < 7; j++) {
             if (c / 7 == i && c % 7 == j) {
-                std::cout << (board[bi] ? " o " : "   ");
+                std::printf(" %s ", board[bi] ? "o" : " ");
                 c = peg_solitaire::translate_index(++bi);
             } else {
-                std::cout << " - ";
+                std::printf(" - ");
             }
         }
-        std::cout << "\n";
+        std::printf("\n");
     }
-    std::cout << "\n";
+    std::printf("\n");
 } 
 
 namespace peg_solitaire {
@@ -73,56 +75,48 @@ namespace peg_solitaire {
     }
 
     void print_board(std::bitset<33> board, uint8_t time_limit, uint64_t nodes_expanded, uint64_t maximum_nodes) {
-        std::cout << algorithm << " - " << (int)time_limit << " Minute" << (time_limit == 1 ? "\n\n" : "s\n\n");
+        std::printf("%s - %d Minute%s\n\n", algorithm.c_str(), (int)time_limit, time_limit == 1 ? "" : "s");
 
         _print_board(board);
 
-        std::cout << "Remaining pieces: " << std::setfill(' ') << std::setw(10) << board.count() << "\n";
-
-        std::cout << "Expanded Nodes: " << std::setfill(' ') << std::setw(12) << nodes_expanded << "\n";
-
-        std::cout << "Maximum Nodes: " << std::setfill(' ') << std::setw(13) << maximum_nodes << "\n";
+        std::printf("Remaining pieces: %10ld\n", board.count());
+        std::printf("Expanded Nodes: %12ld\n", nodes_expanded);
+        std::printf("Maximum nodes: %13ld\n", maximum_nodes);
 
         auto ram_usage = peg_solitaire::process_mem_usage();
-
-        std::cout << "Ram usage: " << std::setfill(' ') << std::setw(15) << std::setprecision(1) << std::fixed << ram_usage.first << ram_usage.second << "\n";
+        std::printf("Ram usage: %15.1lf%s\n", ram_usage.first, ram_usage.second.c_str());
 
         auto elapsed_time = peg_solitaire::parse_elapsed_time();
-
-        uint16_t milliseconds = elapsed_time % 1000;
-        uint8_t seconds = (elapsed_time / 1000) % 60;
-        uint8_t minutes = (elapsed_time / 60000) % 60;
-        uint8_t hours = (elapsed_time / 3600000) % 60;
-
-        std::cout << "Time:           " 
-            << std::setfill('0') << std::setw(2) << (int)hours << ":" 
-            << std::setfill('0') << std::setw(2) << (int)minutes << ":" 
-            << std::setfill('0') << std::setw(2) << (int)seconds << ":"
-            << std::setfill('0') << std::setw(3) << (int)milliseconds << "\n";
+        uint16_t 
+            milliseconds = elapsed_time % 1000,
+            seconds = (elapsed_time / 1000) % 60,
+            minutes = (elapsed_time / 60000) % 60,
+            hours = (elapsed_time / 3600000) % 60;
+        std::printf("%-16s%02d:%02d:%02d:%03d\n", "Time:", hours, minutes, seconds, milliseconds);
     }
 
     void print_solution(std::shared_ptr<Move> best_board, uint8_t status) {
         bool is_valid_solution = !(new OrderedMove(best_board->board, nullptr))->next().any();
 
         if (!is_valid_solution && status == 0x1) {
-            std::cout << "No solution found - Time Limit\n";
+            std::printf("No solution found - Time Limit\n");
             return;
         }
 
         if (!is_valid_solution && status == 0x2) {
-            std::cout << "No solution found - Out of Memory\n";
+            std::printf("No solution found - Out of Memory\n");
             return;
         }
 
         if (status == 0xff) {
-            std::cout << "Optimum solution found";
+            std::printf("Optimum solution found");
         } else if (status == 0x1) {
-            std::cout << "Sub-optimum Solution Found with " << best_board->board.count() << " remaining pegs - Time Limit";
+            std::printf("Sub-optimum Solution Found with %ld remaining pegs - Time Limit", best_board->board.count());
         } else if (status == 0x2) {
-            std::cout << "Sub-optimum Solution Found with " << best_board->board.count() << " remaining pegs - Out of Memory";
+            std::printf("Sub-optimum Solution Found with %ld remaining pegs - Out of Memory", best_board->board.count());
         }
 
-        std::cout << "\nDo you want to print the solution (y/n): ";
+        std::printf("\nDo you want to print the solution? (y/n): ");
 
         std::string choice;
         do {
@@ -138,10 +132,10 @@ namespace peg_solitaire {
             best_board = best_board->parent;
         }
 
-        std::cout << "\n";
+        std::printf("\n");
         while (!solution.empty()) {
             _print_board(solution.top());
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
             solution.pop();
             if (!solution.empty()) CLEAR_LINES(8);
         }
@@ -158,7 +152,7 @@ namespace peg_solitaire {
         https://gist.github.com/thirdwing/da4621eb163a886a03c5
         */
 #if !(defined(_WIN32) || defined(_WIN64))
-        double resident_set = 0.0;
+        double vm_usage     = 0.0;
 
         // the two fields we want
         unsigned long vsize;
@@ -171,15 +165,13 @@ namespace peg_solitaire {
                     >> ignore >> ignore >> vsize >> rss;
         }
 
-        long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
-        resident_set = rss * page_size_kb;
-
+        vm_usage = vsize / 1024.0;
         int i; for (i = 0; i < 2; i++) {
-            if (resident_set < 1024) break;
-            resident_set /= 1024;
+            if (vm_usage < 1024) break;
+            vm_usage /= 1024;
         }
 
-        return {resident_set, std::string(1, "KMG"[i]) + "B"};
+        return {vm_usage, std::string(1, "KMG"[i]) + "B"};
 #elif
         return {0, "KB"};
 #endif

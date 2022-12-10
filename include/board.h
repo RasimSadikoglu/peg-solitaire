@@ -1,14 +1,13 @@
 #pragma once
 
 #include <bitset>
-#include <iostream>
 #include <memory>
 
 #include "move.h"
 
 #define INITIAL_BOARD 0x1fffeffff
 #define OPTIMAL_BOARD 0x10000
-#define CLEAR_LINES(COUNT) do { std::cout << "\033[" #COUNT "F"; } while (false)
+#define CLEAR_LINES(COUNT) do { std::printf("\033[" #COUNT "F"); } while (false)
 
 namespace peg_solitaire {
     uint8_t translate_index(uint8_t index);
