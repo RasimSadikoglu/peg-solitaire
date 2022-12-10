@@ -17,7 +17,7 @@ obj/%.o: src/%.cpp $(_DEPS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run: bin/main
-	bin/main dfs-heuristic 1
+	bin/main bfs 1
 
 debug: bin/main
 	gdb bin/main
