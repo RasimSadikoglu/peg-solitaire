@@ -6,20 +6,20 @@
 
 class MoveFactory {
     public:
-        virtual std::shared_ptr<Move> create_move(std::bitset<33> board) const = 0;
+        virtual std::shared_ptr<Move> create_move(std::bitset<33> board, std::shared_ptr<Move> parent) const = 0;
 };
 
-class OrderedMoveFactory : public MoveFactory{
+class OrderedMoveFactory : public MoveFactory {
     public:
-        std::shared_ptr<Move> create_move(std::bitset<33> board) const override;
+        std::shared_ptr<Move> create_move(std::bitset<33> board, std::shared_ptr<Move> parent) const override;
 };
 
-class RandomMoveFactory : public MoveFactory{
+class RandomMoveFactory : public MoveFactory {
     public:
-        std::shared_ptr<Move> create_move(std::bitset<33> board) const override;
+        std::shared_ptr<Move> create_move(std::bitset<33> board, std::shared_ptr<Move> parent) const override;
 };
 
-class HeuristicMoveFactory : public MoveFactory{
+class HeuristicMoveFactory : public MoveFactory {
     public:
-        std::shared_ptr<Move> create_move(std::bitset<33> board) const override;
+        std::shared_ptr<Move> create_move(std::bitset<33> board, std::shared_ptr<Move> parent) const override;
 };

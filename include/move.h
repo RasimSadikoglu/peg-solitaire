@@ -8,13 +8,13 @@
 class Move {
     public:
         std::bitset<33> board;
-        Move(std::bitset<33> board);
+        std::shared_ptr<Move> parent;
+        Move(std::bitset<33> board, std::shared_ptr<Move> parent);
         virtual std::bitset<33> next() = 0;
         virtual ~Move() = default;
 
     protected: 
         std::pair<std::bitset<33>, std::bitset<33>> check_for_next_move(uint8_t peg);
-        std::shared_ptr<Move> parent;
 };
 
 class OrderedMove: public Move {
@@ -23,7 +23,7 @@ class OrderedMove: public Move {
         std::bitset<33> cached_board;
 
     public:
-        OrderedMove(std::bitset<33> board);
+        OrderedMove(std::bitset<33> board, std::shared_ptr<Move> parent);
         std::bitset<33> next() override;
         ~OrderedMove() {}
 };
@@ -35,7 +35,7 @@ class RandomMove: public Move {
         std::array<uint8_t, 33> perm;
 
     public:
-        RandomMove(std::bitset<33> board);
+        RandomMove(std::bitset<33> board, std::shared_ptr<Move> parent);
         std::bitset<33> next() override;
         ~RandomMove() {}
 };
@@ -49,7 +49,7 @@ class HeuristicMove: public Move {
         void calculate_moves();
         uint16_t calculate_heuristic_score(std::bitset<33> board);
     public:
-        HeuristicMove(std::bitset<33> board);
+        HeuristicMove(std::bitset<33> board, std::shared_ptr<Move> parent);
         std::bitset<33> next() override;
         ~HeuristicMove() {}
 };

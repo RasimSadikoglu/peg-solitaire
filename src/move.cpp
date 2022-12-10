@@ -4,22 +4,22 @@
 
 #include "board.h"
 
-Move::Move(std::bitset<33> board): board{board} {}
+Move::Move(std::bitset<33> board, std::shared_ptr<Move> parent): board{board}, parent{parent} {}
 
-OrderedMove::OrderedMove(std::bitset<33> board):
-    Move(board),
+OrderedMove::OrderedMove(std::bitset<33> board, std::shared_ptr<Move> parent):
+    Move(board, parent),
     current_index{1} {}
 
-RandomMove::RandomMove(std::bitset<33> board):
-    Move(board),
+RandomMove::RandomMove(std::bitset<33> board, std::shared_ptr<Move> parent):
+    Move(board, parent),
     current_index{0} {
     for (int i = 0; i < (int)this->perm.size(); i++) this->perm[i] = i;
 
     std::random_shuffle(this->perm.begin(), this->perm.end());
 }
 
-HeuristicMove::HeuristicMove(std::bitset<33> board):
-    Move(board) {
+HeuristicMove::HeuristicMove(std::bitset<33> board, std::shared_ptr<Move> parent):
+    Move(board, parent) {
     this->calculate_moves();
 }
 
@@ -34,10 +34,10 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
     uint8_t i = cd / 7, j = cd % 7;
 
     uint8_t 
-        left = peg_solitaire::translate_coordinate(j - 1 < 7 ? i * 7 + j - 1 : -1),
-        top = peg_solitaire::translate_coordinate(i - 1 < 7 ? i * 7 + j - 7 : -1),
-        right = peg_solitaire::translate_coordinate(j + 1 < 7 ? i * 7 + j + 1 : -1),
-        bottom = peg_solitaire::translate_coordinate(i + 1 < 7 ? i * 7 + j + 7 : -1);
+        left = j - 1 < 7 ? peg_solitaire::translate_coordinate(i * 7 + j - 1) : -1,
+        top = i - 1 < 7 ? peg_solitaire::translate_coordinate(i * 7 + j - 7) : -1,
+        right = j + 1 < 7 ? peg_solitaire::translate_coordinate(i * 7 + j + 1) : -1,
+        bottom = i + 1 < 7 ? peg_solitaire::translate_coordinate( i * 7 + j + 7) : -1;
 
     if (left != 0xff && right != 0xff && (next_board[left] ^ next_board[right])) {
         next_board.reset(peg);

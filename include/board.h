@@ -13,5 +13,5 @@ namespace peg_solitaire {
     void print_board(std::bitset<33> board, uint64_t nodes_expanded = 0);
     void set_algorithm(std::string alg);
     std::pair<double, std::string> process_mem_usage();
-    uint32_t parse_elapsed_time();
+    uint64_t parse_elapsed_time();
 }

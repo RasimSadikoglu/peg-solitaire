@@ -79,11 +79,16 @@ namespace peg_solitaire {
 
         auto elapsed_time = peg_solitaire::parse_elapsed_time();
 
-        uint8_t seconds = elapsed_time % 60;
-        uint8_t minutes = (elapsed_time / 60) % 60;
-        uint8_t hours = (elapsed_time / 3600) % 60;
+        uint16_t milliseconds = elapsed_time % 1000;
+        uint8_t seconds = (elapsed_time / 1000) % 60;
+        uint8_t minutes = (elapsed_time / 60000) % 60;
+        uint8_t hours = (elapsed_time / 3600000) % 60;
 
-        std::cout << "Time:       " << std::setfill('0') << std::setw(2) << (int)hours << ":" << std::setfill('0') << std::setw(2) << (int)minutes << ":" << std::setfill('0') << std::setw(2) << (int)seconds << "\n";
+        std::cout << "Time:   " 
+            << std::setfill('0') << std::setw(2) << (int)hours << ":" 
+            << std::setfill('0') << std::setw(2) << (int)minutes << ":" 
+            << std::setfill('0') << std::setw(2) << (int)seconds << ":"
+            << std::setfill('0') << std::setw(3) << (int)milliseconds << "\n";
     }
 
     void set_algorithm(std::string alg) {
@@ -124,13 +129,8 @@ namespace peg_solitaire {
 #endif
     }
 
-    uint32_t parse_elapsed_time() {
+    uint64_t parse_elapsed_time() {
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-        uint8_t seconds = std::chrono::duration_cast<std::chrono::seconds>(end - begin).count();
-        uint8_t minutes = std::chrono::duration_cast<std::chrono::minutes>(end - begin).count();
-        uint8_t hours   = std::chrono::duration_cast<std::chrono::hours>(end - begin).count();
-
-        return seconds + minutes * 60 + hours * 3600;
+        return std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
     }
 }

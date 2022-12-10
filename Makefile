@@ -17,13 +17,13 @@ obj/%.o: src/%.cpp $(_DEPS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run: bin/main
-	bin/main bfs 1
+	bin/main dfs 1
 
 debug: bin/main
 	gdb bin/main
 
 valgrind: bin/main
-	valgrind --leak-check=full --show-leak-kinds=all bin/main
+	valgrind --leak-check=full --show-leak-kinds=all bin/main bfs 1
 
 $(DIRS):
 	mkdir $@

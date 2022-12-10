@@ -14,20 +14,16 @@
 #include "frontierlist.h"
 #include "board.h"
 
-#define MEMORY_LIMIT 1
+#define MEMORY_LIMIT 8
 
 static uint8_t terminate = 0x0;
 static bool print = false;
 static uint8_t time_limit = -1;
 
-static std::shared_ptr<FrontierList> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
-    uint8_t _ignore_unused = depth;
-    _ignore_unused = _ignore_unused;
+static std::shared_ptr<Move> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
+    frontier_list.push(move_factory.create_move(INITIAL_BOARD, nullptr));
 
-    frontier_list.push(move_factory.create_move(INITIAL_BOARD));
-
-    const std::shared_ptr<FrontierList> best_path;
-    std::bitset<33> best_board{INITIAL_BOARD};
+    std::shared_ptr<Move> best_board = move_factory.create_move(0xff, nullptr);
 
     while (!frontier_list.empty()) {
 
@@ -41,7 +37,7 @@ static std::shared_ptr<FrontierList> search(FrontierList &frontier_list, const M
 
         if (print) {
             CLEAR_LINES(12);
-            peg_solitaire::print_board(best_board, cycle_count);
+            peg_solitaire::print_board(best_board->board, cycle_count);
             print = false;
         }
 
@@ -51,7 +47,7 @@ static std::shared_ptr<FrontierList> search(FrontierList &frontier_list, const M
             auto next_board = top->next();
 
             if (next_board.any()) {
-                frontier_list.push(move_factory.create_move(next_board));
+                frontier_list.push(move_factory.create_move(next_board, top));
                 continue;
             }
 #ifndef BYPASS_DEPTH_CHECK
@@ -59,9 +55,9 @@ static std::shared_ptr<FrontierList> search(FrontierList &frontier_list, const M
 #endif
 
         auto current_board = top->board;
-        if (current_board == OPTIMAL_BOARD || current_board.count() < best_board.count()) {
-            best_board = current_board;
-            if (best_board == 0x10000) {
+        if (current_board == OPTIMAL_BOARD || current_board.count() < best_board->board.count()) {
+            best_board = top;
+            if (best_board->board == OPTIMAL_BOARD) {
                 terminate = 0xff;
                 break;
             }
@@ -71,7 +67,10 @@ static std::shared_ptr<FrontierList> search(FrontierList &frontier_list, const M
         cycle_count++;
     }
 
-    return best_path;
+    CLEAR_LINES(12);
+    peg_solitaire::print_board(best_board->board, cycle_count);
+
+    return best_board;
 }
 
 namespace peg_solitaire {
@@ -127,11 +126,11 @@ namespace peg_solitaire {
         uint64_t artificial_cycles = 0;
         for (;;) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            artificial_cycles++;
+            artificial_cycles = peg_solitaire::parse_elapsed_time() / 10;
 
             if (terminate) break;
 
-            if (artificial_cycles % 10 == 0) {
+            if (artificial_cycles % 100 == 0) {
                 print = true;
             }
 
