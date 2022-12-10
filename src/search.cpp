@@ -14,7 +14,9 @@
 #include "frontierlist.h"
 #include "board.h"
 
+#ifndef MEMORY_LIMIT
 #define MEMORY_LIMIT 8
+#endif
 
 static uint8_t terminate = 0x0;
 static bool print = false;
@@ -102,7 +104,7 @@ namespace peg_solitaire {
     }
 
     void depth_first_search_random_selection() {
-        srand(time(0));
+        srand((unsigned)time(0));
         _setup_search(FrontierStack(), RandomMoveFactory());
     }
 

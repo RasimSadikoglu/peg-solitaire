@@ -14,6 +14,10 @@
 #include <unistd.h>
 #endif
 
+#ifndef SOLUTION_ANIMATION_SPEED
+#define SOLUTION_ANIMATION_SPEED 250
+#endif
+
 static const std::array<const uint8_t, 33> _index_lookup = {
              2,  3,  4,
              9, 10, 11,
@@ -46,12 +50,12 @@ static std::string algorithm;
 static std::chrono::_V2::steady_clock::time_point begin;
 
 static void _print_board(std::bitset<33> board) {
-    int bi = 0;
-    int c = peg_solitaire::translate_index(bi);
+    uint8_t bi = 0;
+    uint8_t c = peg_solitaire::translate_index(bi);
 
-    for (int i = 0; i < 7; i++) {
+    for (uint8_t i = 0; i < 7; i++) {
         std::printf("%4s", "");
-        for (int j = 0; j < 7; j++) {
+        for (uint8_t j = 0; j < 7; j++) {
             if (c / 7 == i && c % 7 == j) {
                 std::printf(" %s ", board[bi] ? "o" : " ");
                 c = peg_solitaire::translate_index(++bi);
@@ -88,10 +92,10 @@ namespace peg_solitaire {
 
         auto elapsed_time = peg_solitaire::parse_elapsed_time();
         uint16_t 
-            milliseconds = elapsed_time % 1000,
-            seconds = (elapsed_time / 1000) % 60,
-            minutes = (elapsed_time / 60000) % 60,
-            hours = (elapsed_time / 3600000) % 60;
+            milliseconds = (uint16_t)(elapsed_time % 1000),
+            seconds = (uint16_t)((elapsed_time / 1000) % 60),
+            minutes = (uint16_t)((elapsed_time / 60000) % 60),
+            hours = (uint16_t)((elapsed_time / 3600000) % 60);
         std::printf("%-16s%02d:%02d:%02d:%03d\n", "Time:", hours, minutes, seconds, milliseconds);
     }
 
@@ -135,7 +139,7 @@ namespace peg_solitaire {
         std::printf("\n");
         while (!solution.empty()) {
             _print_board(solution.top());
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+            std::this_thread::sleep_for(std::chrono::milliseconds(SOLUTION_ANIMATION_SPEED));
             solution.pop();
             if (!solution.empty()) CLEAR_LINES(8);
         }
@@ -165,7 +169,7 @@ namespace peg_solitaire {
                     >> ignore >> ignore >> vsize >> rss;
         }
 
-        vm_usage = vsize / 1024.0;
+        vm_usage = (double)vsize / 1024.0;
         int i; for (i = 0; i < 2; i++) {
             if (vm_usage < 1024) break;
             vm_usage /= 1024;

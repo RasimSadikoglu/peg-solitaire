@@ -13,7 +13,7 @@ OrderedMove::OrderedMove(std::bitset<33> board, std::shared_ptr<Move> parent):
 RandomMove::RandomMove(std::bitset<33> board, std::shared_ptr<Move> parent):
     Move(board, parent),
     current_index{0} {
-    for (int i = 0; i < (int)this->perm.size(); i++) this->perm[i] = i;
+    for (uint8_t i = 0; i < this->perm.size(); i++) this->perm[i] = i;
 
     std::random_shuffle(this->perm.begin(), this->perm.end());
 }
@@ -34,10 +34,10 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
     uint8_t i = cd / 7, j = cd % 7;
 
     uint8_t 
-        left = (uint8_t)(j - 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j - 1) : -1,
-        top = (uint8_t)(i - 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j - 7) : -1,
-        right = (uint8_t)(j + 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j + 1) : -1,
-        bottom = (uint8_t)(i + 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j + 7) : -1;
+        left = (uint8_t)(j - 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j - 1)) : -1,
+        top = (uint8_t)(i - 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j - 7)) : -1,
+        right = (uint8_t)(j + 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j + 1)) : -1,
+        bottom = (uint8_t)(i + 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j + 7)) : -1;
 
     if (left != 0xff && right != 0xff && (next_board[left] ^ next_board[right])) {
         next_board.reset(peg);
@@ -107,7 +107,7 @@ std::bitset<33> RandomMove::next() {
         return cached_board;
     }
 
-    uint8_t size = this->perm.size();
+    uint8_t size = (uint8_t)this->perm.size();
     while (this->current_index < size) {
 
         auto next_move = this->check_for_next_move(this->perm[this->current_index]);
@@ -133,15 +133,15 @@ std::bitset<33> RandomMove::next() {
 
 void HeuristicMove::calculate_moves() {
     for (uint8_t i = 1; i < 33; i++) {
-        auto moves = this->check_for_next_move(i);
+        auto next_move = this->check_for_next_move(i);
 
-        if (moves.first == 0x0) continue;
+        if (next_move.first == 0x0) continue;
 
-        this->moves.push({this->calculate_heuristic_score(moves.first), i, moves.first.to_ullong()});
+        this->moves.push({this->calculate_heuristic_score(next_move.first), i, next_move.first.to_ullong()});
 
-        if (moves.second == 0x0) continue;
+        if (next_move.second == 0x0) continue;
 
-        this->moves.push({this->calculate_heuristic_score(moves.second), i, moves.second.to_ullong()});
+        this->moves.push({this->calculate_heuristic_score(next_move.second), i, next_move.second.to_ullong()});
     }
 }
 
@@ -155,10 +155,10 @@ uint16_t HeuristicMove::calculate_heuristic_score(std::bitset<33> board) {
         uint8_t i = cd / 7, j = cd % 7;
 
         uint8_t 
-            left = (uint8_t)(j - 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j - 1) : -1,
-            top = (uint8_t)(i - 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j - 7) : -1,
-            right = (uint8_t)(j + 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j + 1) : -1,
-            bottom = (uint8_t)(i + 1) < 7 ? peg_solitaire::translate_coordinate(i * 7 + j + 7) : -1;
+            left = (uint8_t)(j - 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j - 1)) : -1,
+            top = (uint8_t)(i - 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j - 7)) : -1,
+            right = (uint8_t)(j + 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j + 1)) : -1,
+            bottom = (uint8_t)(i + 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j + 7)) : -1;
 
         // uint8_t loneliness = 1;
         uint8_t loneliness = 0;

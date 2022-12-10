@@ -1,6 +1,9 @@
 CXX:=g++
-CXXFLAGS:=-O3 -Wall -Wextra -Iinclude -std=c++23
-MACROS=-DBYPASS_DEPTH_CHECK -DBYPASS_TIME_MEMORY_LIMIT
+CXXFLAGS:=-Iinclude -std=c++23
+VERBOSITY_FLAGS=-Wall -Werror -Wextra -Wpedantic -Wconversion -Wcast-align -Wunused -Wpointer-arith -Wcast-qual -Wno-missing-braces
+OPT_FLAGS:=-Ofast -finline-functions -funroll-loops
+MACROS=-DMEMORY_LIMIT=8 -DSOLUTION_ANIMATION_SPEED=250
+PERFORMANCE_MACROS=-DBYPASS_DEPTH_CHECK -DBYPASS_TIME_MEMORY_LIMIT 
 
 DEPS:=move board search movefactory frontierlist
 OBJS:=main move board search movefactory frontierlist
@@ -11,13 +14,13 @@ _DEPS:=$(patsubst %, include/%.h, $(DEPS))
 _OBJS:=$(patsubst %, obj/%.o, $(OBJS))
 
 $(BIN): $(DIRS) $(_OBJS)
-	$(CXX) $(CXXFLAGS) $(_OBJS) -o $@
+	$(CXX) $(CXXFLAGS) $(OPT_FLAGS) $(VERBOSITY_FLAGS) $(_OBJS) -o $@
 
 obj/%.o: src/%.cpp $(_DEPS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(OPT_FLAGS) $(VERBOSITY_FLAGS) $(MACROS) -c $< -o $@
 
 run: bin/main
-	bin/main bfs -1
+	bin/main dfs-heuristic -1
 
 debug: bin/main
 	gdb bin/main

@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
         std::make_pair("dfs-heuristic", peg_solitaire::depth_first_search_heuristic_selection),
     };
 
-    peg_solitaire::set_time_limit(std::atoi(argv[2]));
+    peg_solitaire::set_time_limit((uint8_t)std::atoi(argv[2]));
     std::thread helper_thread(peg_solitaire::helper_thread);
 
     peg_solitaire::set_algorithm(argv[1]);
