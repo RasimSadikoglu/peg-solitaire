@@ -31,6 +31,4 @@ int main(int argc, char* argv[]) {
 #ifndef BYPASS_TIME_MEMORY_LIMIT
     helper_thread.join();
 #endif
-
-    // peg_solitaire::test_translate();
 }

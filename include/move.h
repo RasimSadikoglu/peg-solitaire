@@ -4,6 +4,7 @@
 #include <array>
 #include <map>
 #include <memory>
+#include <queue>
 
 class Move {
     public:
@@ -42,8 +43,7 @@ class RandomMove: public Move {
 
 class HeuristicMove: public Move {
     private:
-        std::map<uint16_t, std::bitset<33>> moves;
-        std::map<uint16_t, std::bitset<33>>::iterator next_move;
+        std::priority_queue<std::vector<uint64_t>, std::vector<std::vector<uint64_t>>, std::greater<std::vector<uint64_t>>> moves;
 
     private:
         void calculate_moves();

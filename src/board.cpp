@@ -5,6 +5,8 @@
 #include <chrono>
 #include <unordered_map>
 #include <fstream>
+#include <stack>
+#include <thread>
 
 #if !(defined(_WIN32) || defined(_WIN64))
 #include <unistd.h>
@@ -41,6 +43,25 @@ static const std::unordered_map<std::string, std::string> algorithm_full_names =
 static std::string algorithm;
 static std::chrono::_V2::steady_clock::time_point begin;
 
+static void _print_board(std::bitset<33> board) {
+    int bi = 0;
+    int c = peg_solitaire::translate_index(bi);
+
+    for (int i = 0; i < 7; i++) {
+        std::cout << "    ";
+        for (int j = 0; j < 7; j++) {
+            if (c / 7 == i && c % 7 == j) {
+                std::cout << (board[bi] ? " o " : "   ");
+                c = peg_solitaire::translate_index(++bi);
+            } else {
+                std::cout << " - ";
+            }
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n";
+} 
+
 namespace peg_solitaire {
 
     uint8_t translate_index(uint8_t index) {
@@ -51,31 +72,20 @@ namespace peg_solitaire {
         return coordinate < 49 ? _coordinate_lookup[coordinate] : -1;
     }
 
-    void print_board(std::bitset<33> board, uint64_t nodes_expanded) {
-        std::cout << algorithm << "\n";
+    void print_board(std::bitset<33> board, uint8_t time_limit, uint64_t nodes_expanded, uint64_t maximum_nodes) {
+        std::cout << algorithm << " - " << (int)time_limit << " Minute" << (time_limit == 1 ? "\n\n" : "s\n\n");
 
-        int bi = 0;
-        int c = peg_solitaire::translate_index(bi);
+        _print_board(board);
 
-        for (int i = 0; i < 7; i++) {
-            for (int j = 0; j < 7; j++) {
-                if (c / 7 == i && c % 7 == j) {
-                    std::cout << (board[bi] ? " o " : "   ");
-                    c = peg_solitaire::translate_index(++bi);
-                } else {
-                    std::cout << " - ";
-                }
-            }
-            std::cout << "\n";
-        }
+        std::cout << "Remaining pieces: " << std::setfill(' ') << std::setw(10) << board.count() << "\n";
 
-        std::cout << "Remaining pieces: " << std::setfill(' ') << std::setw(2) << board.count() << "\n";
+        std::cout << "Expanded Nodes: " << std::setfill(' ') << std::setw(12) << nodes_expanded << "\n";
 
-        std::cout << "Count: " << std::setfill(' ') << std::setw(13) << nodes_expanded << "\n";
+        std::cout << "Maximum Nodes: " << std::setfill(' ') << std::setw(13) << maximum_nodes << "\n";
 
         auto ram_usage = peg_solitaire::process_mem_usage();
 
-        std::cout << "Ram usage: " << std::setfill(' ') << std::setw(7) << std::setprecision(1) << std::fixed << ram_usage.first << ram_usage.second << "\n";
+        std::cout << "Ram usage: " << std::setfill(' ') << std::setw(15) << std::setprecision(1) << std::fixed << ram_usage.first << ram_usage.second << "\n";
 
         auto elapsed_time = peg_solitaire::parse_elapsed_time();
 
@@ -84,11 +94,57 @@ namespace peg_solitaire {
         uint8_t minutes = (elapsed_time / 60000) % 60;
         uint8_t hours = (elapsed_time / 3600000) % 60;
 
-        std::cout << "Time:   " 
+        std::cout << "Time:           " 
             << std::setfill('0') << std::setw(2) << (int)hours << ":" 
             << std::setfill('0') << std::setw(2) << (int)minutes << ":" 
             << std::setfill('0') << std::setw(2) << (int)seconds << ":"
             << std::setfill('0') << std::setw(3) << (int)milliseconds << "\n";
+    }
+
+    void print_solution(std::shared_ptr<Move> best_board, uint8_t status) {
+        bool is_valid_solution = !(new OrderedMove(best_board->board, nullptr))->next().any();
+
+        if (!is_valid_solution && status == 0x1) {
+            std::cout << "No solution found - Time Limit\n";
+            return;
+        }
+
+        if (!is_valid_solution && status == 0x2) {
+            std::cout << "No solution found - Out of Memory\n";
+            return;
+        }
+
+        if (status == 0xff) {
+            std::cout << "Optimum solution found";
+        } else if (status == 0x1) {
+            std::cout << "Sub-optimum Solution Found with " << best_board->board.count() << " remaining pegs - Time Limit";
+        } else if (status == 0x2) {
+            std::cout << "Sub-optimum Solution Found with " << best_board->board.count() << " remaining pegs - Out of Memory";
+        }
+
+        std::cout << "\nDo you want to print the solution (y/n): ";
+
+        std::string choice;
+        do {
+            std::cin >> choice;
+        } while (choice != "y" && choice != "n");
+
+        if (choice == "n") return;
+
+        std::stack<std::bitset<33>> solution;
+
+        while (best_board != nullptr) {
+            solution.push(best_board->board);
+            best_board = best_board->parent;
+        }
+
+        std::cout << "\n";
+        while (!solution.empty()) {
+            _print_board(solution.top());
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            solution.pop();
+            if (!solution.empty()) CLEAR_LINES(8);
+        }
     }
 
     void set_algorithm(std::string alg) {

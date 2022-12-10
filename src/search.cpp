@@ -19,11 +19,13 @@
 static uint8_t terminate = 0x0;
 static bool print = false;
 static uint8_t time_limit = -1;
+static uint64_t maximum_number_of_nodes_in_memory = 0;
 
-static std::shared_ptr<Move> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &cycle_count, const uint8_t depth = -1) {
+static std::shared_ptr<Move> search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &expanded_nodes, const uint8_t depth = -1) {
     frontier_list.push(move_factory.create_move(INITIAL_BOARD, nullptr));
+    expanded_nodes++;
 
-    std::shared_ptr<Move> best_board = move_factory.create_move(0xff, nullptr);
+    std::shared_ptr<Move> best_board = move_factory.create_move(0x1ffffffff, nullptr);
 
     while (!frontier_list.empty()) {
 
@@ -36,8 +38,8 @@ static std::shared_ptr<Move> search(FrontierList &frontier_list, const MoveFacto
         auto top = frontier_list.top();
 
         if (print) {
-            CLEAR_LINES(12);
-            peg_solitaire::print_board(best_board->board, cycle_count);
+            CLEAR_LINES(15);
+            peg_solitaire::print_board(best_board->board, time_limit, expanded_nodes, maximum_number_of_nodes_in_memory);
             print = false;
         }
 
@@ -47,7 +49,9 @@ static std::shared_ptr<Move> search(FrontierList &frontier_list, const MoveFacto
             auto next_board = top->next();
 
             if (next_board.any()) {
+                expanded_nodes++;
                 frontier_list.push(move_factory.create_move(next_board, top));
+                maximum_number_of_nodes_in_memory = std::max(maximum_number_of_nodes_in_memory, frontier_list.size());
                 continue;
             }
 #ifndef BYPASS_DEPTH_CHECK
@@ -64,58 +68,59 @@ static std::shared_ptr<Move> search(FrontierList &frontier_list, const MoveFacto
         }
 
         frontier_list.pop();
-        cycle_count++;
     }
 
-    CLEAR_LINES(12);
-    peg_solitaire::print_board(best_board->board, cycle_count);
+    CLEAR_LINES(15);
+    peg_solitaire::print_board(best_board->board, time_limit, expanded_nodes, maximum_number_of_nodes_in_memory);
+    peg_solitaire::print_solution(best_board, terminate);
 
     return best_board;
 }
 
 namespace peg_solitaire {
     void breadth_first_search() {
-        peg_solitaire::print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD, time_limit);
         auto frontier_list = FrontierQueue();
-        uint64_t cycle_count = 0;
-        search(frontier_list, OrderedMoveFactory(), cycle_count);
+        uint64_t expanded_nodes = 0;
+        auto best_board = search(frontier_list, OrderedMoveFactory(), expanded_nodes);
     }
 
     void depth_first_search() {
-        peg_solitaire::print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD, time_limit);
         auto frontier_list = FrontierStack();
-        uint64_t cycle_count = 0;
-        search(frontier_list, OrderedMoveFactory(), cycle_count);
+        uint64_t expanded_nodes = 0;
+        auto best_board = search(frontier_list, OrderedMoveFactory(), expanded_nodes);
     }
 
     void iterative_deepining_search() {
-        peg_solitaire::print_board(INITIAL_BOARD);
-        uint64_t cycle_count = 0;
+        peg_solitaire::print_board(INITIAL_BOARD, time_limit);
+        uint64_t expanded_nodes = 0;
         for (uint8_t depth = 0; depth < 33; depth++) {
             auto frontier_list = FrontierStack(); 
-            search(frontier_list, OrderedMoveFactory(), cycle_count, depth);
+            auto best_board = search(frontier_list, OrderedMoveFactory(), expanded_nodes, depth);
         }
     }
 
     void depth_first_search_random_selection() {
-        peg_solitaire::print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD, time_limit);
         auto frontier_list = FrontierStack();
-        uint64_t cycle_count = 0;
-        search(frontier_list, RandomMoveFactory(), cycle_count);
+        uint64_t expanded_nodes = 0;
+        auto best_board = search(frontier_list, RandomMoveFactory(), expanded_nodes);
+        // peg_solitaire::print_solution(best_board, terminate);
     }
 
     void depth_first_search_heuristic_selection() {
-        peg_solitaire::print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD, time_limit);
         auto frontier_list = FrontierStack();
-        uint64_t cycle_count = 0;
-        search(frontier_list, HeuristicMoveFactory(), cycle_count);
+        uint64_t expanded_nodes = 0;
+        auto best_board = search(frontier_list, HeuristicMoveFactory(), expanded_nodes);
     }
 
     void depth_limited_search(uint8_t depth) {
-        peg_solitaire::print_board(INITIAL_BOARD);
+        peg_solitaire::print_board(INITIAL_BOARD, time_limit);
         auto frontier_list = FrontierStack();
-        uint64_t cycle_count = 0;
-        search(frontier_list, OrderedMoveFactory(), cycle_count, depth);
+        uint64_t expanded_nodes = 0;
+        auto best_board = search(frontier_list, OrderedMoveFactory(), expanded_nodes, depth);
     }
     
     void set_time_limit(uint8_t minutes) {

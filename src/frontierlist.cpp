@@ -1,6 +1,6 @@
 #include "frontierlist.h"
 
-std::shared_ptr<Move> FrontierStack::top() {
+std::shared_ptr<Move> FrontierStack::top() const {
     return list.top();
 }
 
@@ -12,11 +12,15 @@ void FrontierStack::pop() {
     list.pop();
 }
 
-bool FrontierStack::empty() {
+bool FrontierStack::empty() const {
     return list.empty();
 }
 
-std::shared_ptr<Move> FrontierQueue::top() {
+uint64_t FrontierStack::size() const {
+    return list.size();
+}
+
+std::shared_ptr<Move> FrontierQueue::top() const {
     return list.front();
 }
 
@@ -28,6 +32,10 @@ void FrontierQueue::pop() {
     list.pop();
 }
 
-bool FrontierQueue::empty() {
+bool FrontierQueue::empty() const {
     return list.empty();
+}
+
+uint64_t FrontierQueue::size() const {
+    return list.size();
 }
