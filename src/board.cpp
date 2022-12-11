@@ -160,13 +160,12 @@ namespace peg_solitaire {
 
         // the two fields we want
         unsigned long vsize;
-        long rss;
         {
             std::string ignore;
             std::ifstream ifs("/proc/self/stat", std::ios_base::in);
             ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
                     >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
-                    >> ignore >> ignore >> vsize >> rss;
+                    >> ignore >> ignore >> vsize;
         }
 
         vm_usage = (double)vsize / 1024.0;

@@ -20,7 +20,7 @@ obj/%.o: src/%.cpp $(_DEPS)
 	$(CXX) $(CXXFLAGS) $(OPT_FLAGS) $(VERBOSITY_FLAGS) $(MACROS) -c $< -o $@
 
 run: bin/main
-	bin/main dfs-heuristic -1
+	bin/main dfs 1
 
 debug: bin/main
 	gdb bin/main

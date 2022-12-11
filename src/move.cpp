@@ -43,7 +43,7 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
         next_board.reset(peg);
         next_board.flip(left);
         next_board.flip(right);
-        result.second = next_board;
+        result.first = next_board;
         next_board = this->board;
     }
 
@@ -51,7 +51,7 @@ std::pair<std::bitset<33>, std::bitset<33>> Move::check_for_next_move(uint8_t pe
         next_board.reset(peg);
         next_board.flip(top);
         next_board.flip(bottom);
-        result.first = next_board;
+        result.second = next_board;
     }
 
     if (result.first == 0x0) {
