@@ -160,16 +160,12 @@ uint16_t HeuristicMove::calculate_heuristic_score(std::bitset<33> board) {
             right = (uint8_t)(j + 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j + 1)) : -1,
             bottom = (uint8_t)(i + 1) < 7 ? peg_solitaire::translate_coordinate((uint8_t)(i * 7 + j + 7)) : -1;
 
-        // uint8_t loneliness = 1;
         uint8_t loneliness = 0;
         loneliness += !((left != 0xff) && board[left]);
         loneliness += !((top != 0xff) && board[top]);
         loneliness += !((right != 0xff) && board[right]);
         loneliness += !((bottom != 0xff) && board[bottom]);
 
-        // uint8_t distance = std::abs((int8_t)i - 3) + std::abs((int8_t)j - 3);
-
-        // score += loneliness * distance;
         score += loneliness;
     }
     return score;

@@ -79,7 +79,7 @@ static void _setup_search(FrontierList &&frontier_list, const MoveFactory &&move
     peg_solitaire::print_board(INITIAL_BOARD, time_limit);
     uint64_t expanded_nodes = 0;
     auto best_board = move_factory.create_move(INITIAL_BOARD, nullptr);
-    if (depth != 0xff) for (uint8_t d = 0; d < depth && depth != 0xff; d++) {
+    if (depth != 0xff) for (uint8_t d = 0; d < depth && depth != 0xff && !terminate; d++) {
         auto new_board = _search(frontier_list, move_factory, expanded_nodes, d);
         if (new_board->board == OPTIMAL_BOARD || new_board->board.count() < best_board->board.count()) best_board = new_board;
     } else {

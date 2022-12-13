@@ -42,8 +42,8 @@ static const std::unordered_map<std::string, std::string> algorithm_full_names =
     {"bfs", "Breadth-First Search"},
     {"dfs", "Depth-First Search"},
     {"idp", "Iterative Deepening Search"},
-    {"dfs-random", "Depth-First Search with Random Selection"},
-    {"dfs-heuristic", "Depth-First Search with a Node Selection Heuristic"}
+    {"random-dfs", "Depth-First Search with Random Selection"},
+    {"heuristic-dfs", "Depth-First Search with a Node Selection Heuristic"}
 };
 
 static std::string algorithm;
@@ -111,6 +111,8 @@ namespace peg_solitaire {
             std::printf("No solution found - Out of Memory\n");
             return;
         }
+
+        if (!is_valid_solution) return;
 
         if (status == 0xff) {
             std::printf("Optimum solution found");

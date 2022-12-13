@@ -6,6 +6,13 @@
 
 #include "move.h"
 
+/*
+    FrontierList uses polymorphism to implement queue and stack data structures in a single class.
+    With the help of this class we can implement dfs and bfs in a single function without using if
+    statements. Both of FrontierStack and FrontierQueue classes just wrap standart stack and queue
+    libraries.
+*/
+
 class FrontierList {
     public:
         virtual std::shared_ptr<Move> top() const = 0;

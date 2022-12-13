@@ -6,6 +6,16 @@
 #include <memory>
 #include <queue>
 
+/*
+    Abstarct move class defines the needed function and attributes for the generation of next 
+    states. Iterator pattern is used in order to reduce the space complexity needed for the 
+    dfs. Next child is only calculated when the 'next' function is called. It reduces space 
+    complexity of dfs to m from m*b. Unfortunately this pattern does not reduce the space of 
+    complexity of bfs due to FIFO principal. Also this pattern does not work well with heuristic
+    move generation because finding best possible next state requires looking all childs. Therefore 
+    heuristic move generation also does not reduce the space complexity.
+*/
+
 class Move {
     public:
         std::bitset<33> board;
