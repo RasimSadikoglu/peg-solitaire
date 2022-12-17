@@ -18,6 +18,7 @@
 
 class Move {
     public:
+        bool is_valid_solution;
         std::bitset<33> board;
         std::shared_ptr<Move> parent;
         Move(std::bitset<33> board, std::shared_ptr<Move> parent);

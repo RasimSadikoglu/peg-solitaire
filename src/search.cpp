@@ -23,15 +23,13 @@ static bool print = false;
 static uint8_t time_limit = -1;
 static uint64_t maximum_number_of_nodes_in_memory = 0;
 
-static std::shared_ptr<Move> _search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &expanded_nodes, const uint8_t depth = -1) {
+static std::shared_ptr<Move> _search(FrontierList &frontier_list, const MoveFactory &move_factory, uint64_t &expanded_nodes, std::shared_ptr<Move> best_board, const uint8_t depth = -1) {
     frontier_list.push(move_factory.create_move(INITIAL_BOARD, nullptr));
     expanded_nodes++;
 
-    std::shared_ptr<Move> best_board = move_factory.create_move(INITIAL_BOARD, nullptr);
-
     while (!frontier_list.empty()) {
 
-#ifndef BYPASS_TIME_MEMORY_LIMIT
+#ifndef BYPASS_TIME_MEMORY_LIMIT // This is a performance macro that disables time and memory limits. It is disabled by default.
         if (terminate) {
             break;
         }
@@ -45,11 +43,12 @@ static std::shared_ptr<Move> _search(FrontierList &frontier_list, const MoveFact
             print = false;
         }
 
-#ifndef BYPASS_DEPTH_CHECK
+#ifndef BYPASS_DEPTH_CHECK // This is a performance macro that disables depth checking. For consequence this breaks iterative deeping search. It is disabled by default.
         if (depth > 32 - top->board.count()) {
 #endif
             auto next_board = top->next();
 
+            // If next board is not null (i.e. 0x0), put it into frontier_list.
             if (next_board.any()) {
                 expanded_nodes++;
                 frontier_list.push(move_factory.create_move(next_board, top));
@@ -57,11 +56,11 @@ static std::shared_ptr<Move> _search(FrontierList &frontier_list, const MoveFact
                 continue;
             }
 #ifndef BYPASS_DEPTH_CHECK
-        }
+        } else top->next();
 #endif
 
         auto current_board = top->board;
-        if (current_board == OPTIMAL_BOARD || current_board.count() < best_board->board.count()) {
+        if (current_board == OPTIMAL_BOARD || (current_board.count() < best_board->board.count() && top->is_valid_solution)) {
             best_board = top;
             if (best_board->board == OPTIMAL_BOARD) {
                 terminate = 0xff;
@@ -80,10 +79,9 @@ static void _setup_search(FrontierList &&frontier_list, const MoveFactory &&move
     uint64_t expanded_nodes = 0;
     auto best_board = move_factory.create_move(INITIAL_BOARD, nullptr);
     if (depth != 0xff) for (uint8_t d = 0; d < depth && depth != 0xff && !terminate; d++) {
-        auto new_board = _search(frontier_list, move_factory, expanded_nodes, d);
-        if (new_board->board == OPTIMAL_BOARD || new_board->board.count() < best_board->board.count()) best_board = new_board;
+        best_board = _search(frontier_list, move_factory, expanded_nodes, best_board, d);
     } else {
-        best_board = _search(frontier_list, move_factory, expanded_nodes);
+        best_board = _search(frontier_list, move_factory, expanded_nodes, best_board);
     }
     CLEAR_LINES(15);
     peg_solitaire::print_board(best_board->board, time_limit, expanded_nodes, maximum_number_of_nodes_in_memory);
@@ -119,7 +117,6 @@ namespace peg_solitaire {
     void helper_thread() {
         uint64_t artificial_cycles = 0;
         for (;;) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             artificial_cycles = peg_solitaire::parse_elapsed_time() / 10;
 
             if (terminate) break;
@@ -128,7 +125,7 @@ namespace peg_solitaire {
                 print = true;
             }
 
-            if (artificial_cycles > time_limit * 6000) {
+            if (artificial_cycles >= time_limit * 6000) {
                 terminate = 0x1;
                 break;
             }
@@ -138,6 +135,8 @@ namespace peg_solitaire {
                 terminate = 0x2;
                 break;
             }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
 }

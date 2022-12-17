@@ -2,7 +2,7 @@ CXX:=g++
 CXXFLAGS:=-Iinclude -std=c++23
 VERBOSITY_FLAGS:=-Wall -Werror -Wextra -Wpedantic -Wconversion -Wcast-align -Wunused -Wpointer-arith -Wcast-qual -Wno-missing-braces
 OPT_FLAGS:=-Ofast -finline-functions -funroll-loops
-MACROS:=-DMEMORY_LIMIT=8 -DSOLUTION_ANIMATION_SPEED=250
+MACROS:=-DMEMORY_LIMIT=8 -DSOLUTION_ANIMATION_SPEED=500
 PERFORMANCE_MACROS:=-DBYPASS_DEPTH_CHECK -DBYPASS_TIME_MEMORY_LIMIT
 
 algorithm=dfs
@@ -17,7 +17,7 @@ _DEPS:=$(patsubst %, include/%.h, $(DEPS))
 _OBJS:=$(patsubst %, obj/%.o, $(OBJS))
 
 $(BIN): $(DIRS) $(_OBJS)
-	$(CXX) $(CXXFLAGS) $(OPT_FLAGS) $(VERBOSITY_FLAGS) $(_OBJS) -o $@
+	$(CXX) $(_OBJS) -o $@
 
 obj/%.o: src/%.cpp $(_DEPS)
 	$(CXX) $(CXXFLAGS) $(OPT_FLAGS) $(VERBOSITY_FLAGS) $(MACROS) -c $< -o $@
