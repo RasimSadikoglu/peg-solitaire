@@ -29,11 +29,9 @@ static std::shared_ptr<Move> _search(FrontierList &frontier_list, const MoveFact
 
     while (!frontier_list.empty()) {
 
-#ifndef BYPASS_TIME_MEMORY_LIMIT // This is a performance macro that disables time and memory limits. It is disabled by default.
         if (terminate) {
             break;
         }
-#endif
 
         auto top = frontier_list.top();
 
@@ -43,9 +41,7 @@ static std::shared_ptr<Move> _search(FrontierList &frontier_list, const MoveFact
             print = false;
         }
 
-#ifndef BYPASS_DEPTH_CHECK // This is a performance macro that disables depth checking. For consequence this breaks iterative deeping search. It is disabled by default.
         if (depth > 32 - top->board.count()) {
-#endif
             auto next_board = top->next();
 
             // If next board is not null (i.e. 0x0), put it into frontier_list.
@@ -55,9 +51,7 @@ static std::shared_ptr<Move> _search(FrontierList &frontier_list, const MoveFact
                 maximum_number_of_nodes_in_memory = std::max(maximum_number_of_nodes_in_memory, frontier_list.size());
                 continue;
             }
-#ifndef BYPASS_DEPTH_CHECK
-        } else top->next();
-#endif
+        } else top->next(); // Calculating is_valid_solution for idp.
 
         auto current_board = top->board;
         if (current_board == OPTIMAL_BOARD || (current_board.count() < best_board->board.count() && top->is_valid_solution)) {

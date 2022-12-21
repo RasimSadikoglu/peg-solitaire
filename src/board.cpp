@@ -15,7 +15,7 @@
 #endif
 
 #ifndef SOLUTION_ANIMATION_SPEED
-#define SOLUTION_ANIMATION_SPEED 250
+#define SOLUTION_ANIMATION_SPEED 500
 #endif
 
 static const std::array<const uint8_t, 33> _index_lookup = {

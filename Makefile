@@ -1,9 +1,8 @@
-CXX:=g++
-CXXFLAGS:=-Iinclude -std=c++23
+MACROS:=-DMEMORY_LIMIT=8 -DSOLUTION_ANIMATION_SPEED=500
+
+CXXFLAGS:=-Iinclude -std=c++14
 VERBOSITY_FLAGS:=-Wall -Werror -Wextra -Wpedantic -Wconversion -Wcast-align -Wunused -Wpointer-arith -Wcast-qual -Wno-missing-braces
 OPT_FLAGS:=-Ofast -finline-functions -funroll-loops
-MACROS:=-DMEMORY_LIMIT=8 -DSOLUTION_ANIMATION_SPEED=500
-PERFORMANCE_MACROS:=-DBYPASS_DEPTH_CHECK -DBYPASS_TIME_MEMORY_LIMIT
 
 algorithm=dfs
 time_limit=60
